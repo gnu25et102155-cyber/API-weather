@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>🌍 Weather App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Weather App</h1>
+        
+        <div class="search-box">
+            <input type="text" id="cityInput" placeholder="Enter city name (London, Tokyo, etc)..." autocomplete="off">
+            <button onclick="searchWeather()">🔍 Search</button>
+            <button onclick="getMyLocation()" class="location-btn">📍 My Location</button>
+        </div>
+
+        <div id="status" class="status"></div>
+        <div id="locationInfo" class="location-info"></div>
+
+        <div id="weatherResult" class="weather-result">
+            <div class="weather-item">
+                <label>📍 Location</label>
+                <div id="resultLocation">-</div>
+            </div>
+
+            <div class="weather-item">
+                <label>🌡️ Temperature</label>
+                <div id="resultTemp">-</div>
+            </div>
+
+            <div class="weather-item">
+                <label>☁️ Condition</label>
+                <div id="resultCondition">-</div>
+            </div>
+
+            <div class="weather-grid">
+                <div class="weather-item">
+                    <label>💧 Humidity</label>
+                    <div id="resultHumidity">-</div>
+                </div>
+                <div class="weather-item">
+                    <label>💨 Wind</label>
+                    <div id="resultWind">-</div>
+                </div>
+                <div class="weather-item">
+                    <label>🌅 Sunrise</label>
+                    <div id="resultSunrise">-</div>
+                </div>
+                <div class="weather-item">
+                    <label>🌇 Sunset</label>
+                    <div id="resultSunset">-</div>
+                </div>
+            </div>
+
+            <div class="weather-item">
+                <label>📊 Pressure</label>
+                <div id="resultPressure">-</div>
+            </div>
+
+            <div class="weather-item">
+                <label>👁️ Visibility</label>
+                <div id="resultVisibility">-</div>
+            </div>
+        </div>
+
+        <div id="errorMsg" class="error-msg"></div>
+
+        <div id="searchHistory" class="search-history">
+            <h3>Recent Searches</h3>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        let history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
+
+        async function searchWeather() {
+            const city = document.getElementById('cityInput').value.trim();
+            if (!city) {
+                showError('Please enter a city name');
+                return;
+            }
+            
+            showStatus('Searching...');
+            try {
+                const res = await fetch(`/api/weather/${city}`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    displayWeather(data);
+                    addToHistory(city);
+                    showError('');
+                } else {
+                    showError('❌ ' + (data.error || 'City not found'));
+                }
+            } catch (err) {
+                showError('❌ Error: ' + err.message);
+            }
+            showStatus('');
+        }
+
+        function displayWeather(data) {
+            document.getElementById('resultLocation').textContent = data.location;
+            document.getElementById('resultTemp').textContent = data.temperature + '°C (feels like ' + data.feels_like + '°C)';
+            document.getElementById('resultCondition').textContent = data.description.toUpperCase();
+            document.getElementById('resultHumidity').textContent = data.humidity + '%';
+            document.getElementById('resultWind').textContent = data.wind_speed + ' m/s';
+            document.getElementById('resultPressure').textContent = data.pressure + ' hPa';
+            document.getElementById('resultVisibility').textContent = data.visibility + ' km';
+            document.getElementById('resultSunrise').textContent = data.sunrise;
+            document.getElementById('resultSunset').textContent = data.sunset;
+            document.getElementById('weatherResult').style.display = 'block';
+        }
+
+        function showStatus(msg) {
+            const el = document.getElementById('status');
+            el.textContent = msg;
+            el.style.display = msg ? 'block' : 'none';
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.style.display = msg ? 'block' : 'none';
+        }
+
+        async function getMyLocation() {
+            showStatus('Detecting location...');
+            try {
+                const res = await fetch('/api/location');
+                const data = await res.json();
+                
+                if (data.success) {
+                    const info = `📍 ${data.country} - ${data.city}<br><small>IP: ${data.ip}</small>`;
+                    document.getElementById('locationInfo').innerHTML = info;
+                    document.getElementById('locationInfo').style.display = 'block';
+                    
+                    if (data.city !== 'Unknown') {
+                        document.getElementById('cityInput').value = data.city;
+                        setTimeout(() => searchWeather(), 300);
+                    }
+                } else {
+                    showError('❌ ' + (data.error || 'Could not detect location'));
+                }
+            } catch (err) {
+                showError('❌ Location error: ' + err.message);
+            }
+            showStatus('');
+        }
+
+        function addToHistory(city) {
+            if (!history.includes(city)) {
+                history.unshift(city);
+                history = history.slice(0, 10);
+                localStorage.setItem('weatherHistory', JSON.stringify(history));
+                updateHistory();
+            }
+        }
+
+        function updateHistory() {
+            const list = document.getElementById('historyList');
+            if (history.length === 0) {
+                list.innerHTML = '<small>No history</small>';
+                return;
+            }
+            list.innerHTML = history.map(city => 
+                `<button class="history-item" onclick="searchCity('${city}')">${city}</button>`
+            ).join('');
+        }
+
+        function searchCity(city) {
+            document.getElementById('cityInput').value = city;
+            searchWeather();
+        }
+
+        document.getElementById('cityInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchWeather();
+        });
+
+        window.addEventListener('load', () => {
+            updateHistory();
+            document.getElementById('weatherResult').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

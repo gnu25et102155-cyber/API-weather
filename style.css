@@ -1,0 +1,368 @@
+/* Reset & Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background: url("https://www.weathercompany.com/wp-content/uploads/2024/01/hero-hurricane-storm-weather-shutterstock_1603937461.jpg") no-repeat center center;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Main Container */
+.container {
+    background: rgba(23, 22, 22, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Heading */
+h1 {
+    color: #181717;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2rem;
+}
+
+/* Search Box */
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+input {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+    min-width: 200px;
+}
+
+input::placeholder {
+    color: #666;
+}
+
+button {
+    padding: 15px 25px;
+    border: none;
+    border-radius: 10px;
+    background: blue;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+button:hover {
+    background: #ff6b6b;
+    transform: scale(1.05);
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+.location-btn {
+    background: #4ecdc4 !important;
+    padding: 15px 20px !important;
+}
+
+.location-btn:hover {
+    background: #3db8b0 !important;
+}
+
+/* Weather Info */
+.weather-info {
+    display: none;
+    color: #fff;
+}
+
+.weather-info.show {
+    display: block;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.location {
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.temp {
+    font-size: 4rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+.description {
+    text-align: center;
+    font-size: 1.2rem;
+    text-transform: capitalize;
+    margin-bottom: 20px;
+}
+
+/* Weather Details */
+.details {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.detail-item {
+    text-align: center;
+}
+
+.detail-item span {
+    display: block;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.detail-item strong {
+    font-size: 1.2rem;
+}
+
+/* Error Message */
+.error {
+    color: #ff6b6b;
+    text-align: center;
+    margin-top: 20px;
+    display: none;
+}
+
+.error.show {
+    display: block;
+}
+
+/* Status Message */
+.status {
+    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    background: rgba(100, 200, 100, 0.2);
+    color: #90ee90;
+    display: none;
+    font-weight: bold;
+}
+
+.status.show {
+    display: block;
+}
+
+/* Location Info */
+.location-info {
+    background: rgba(78, 205, 196, 0.2);
+    border: 2px solid rgba(78, 205, 196, 0.5);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    color: #4ecdc4;
+    text-align: center;
+    display: none;
+    font-weight: bold;
+}
+
+.location-info.show {
+    display: block;
+    animation: slideIn 0.5s ease-in;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Subtitle */
+.subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+/* Output Sections */
+.output-section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border-left: 4px solid #4ecdc4;
+}
+
+.output-section h2 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: #4ecdc4;
+}
+
+.output-section strong {
+    font-size: 1.3rem;
+    color: #fff;
+    display: block;
+    margin-top: 5px;
+}
+
+/* Detailed Info */
+.weather-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.weather-details p {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.weather-details strong {
+    color: #4ecdc4;
+    display: inline;
+}
+
+.weather-details span {
+    color: #fff;
+    margin-left: 5px;
+}
+
+/* Search History */
+.search-history {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.search-history h3 {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+}
+
+#historyList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-btn {
+    background: rgba(78, 205, 196, 0.2) !important;
+    color: #4ecdc4 !important;
+    border: 1px solid rgba(78, 205, 196, 0.5) !important;
+    padding: 8px 12px !important;
+    text-align: left;
+    font-size: 0.85rem;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.history-btn:hover {
+    background: rgba(78, 205, 196, 0.4) !important;
+    transform: translateX(5px) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .container {
+        padding: 30px 20px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .temp {
+        font-size: 3rem;
+    }
+
+    .weather-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+.error.show {
+    display: block;
+    animation: shake 0.5s ease-in;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+        max-width: 98vw;
+        border-radius: 12px;
+    }
+    h1 {
+        font-size: 1.2rem;
+        margin-bottom: 18px;
+    }
+    .temp {
+        font-size: 2.2rem;
+    }
+    .location {
+        font-size: 1.1rem;
+    }
+    .search-box {
+        flex-direction: column;
+        gap: 8px;
+    }
+    input, button {
+        font-size: 15px;
+        padding: 12px;
+    }
+    button {
+        width: 100%;
+    }
+    .details {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 18px;
+        padding-top: 10px;
+    }
+}

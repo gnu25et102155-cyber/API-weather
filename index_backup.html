@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Responsive viewport for mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>🌍 Weather App - Search Anywhere on Earth</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Weather App</h1>
+        <p class="subtitle">Search weather for any location on Earth</p>
+        
+        <div class="search-box">
+            <input type="text" id="cityInput" placeholder="Enter city name (e.g., London, Tokyo, Mumbai)..." autocomplete="off">
+            <button onclick="getWeather()">🔍 Search</button>
+            <button onclick="getCurrentLocation()" class="location-btn">📍 My Location</button>
+        </div>
+
+        <!-- Current Location Info -->
+        <div class="location-info" id="locationInfo"></div>
+
+        <!-- Search Status -->
+        <div class="status" id="status"></div>
+
+        <!-- Weather Results Output -->
+        <div class="weather-info" id="weatherInfo">
+            <div class="output-section">
+                <h2>📍 LOCATION</h2>
+                <div class="location" id="location">-</div>
+            </div>
+
+            <div class="output-section">
+                <h2>🌡️ TEMPERATURE</h2>
+                <div class="temp" id="temp">-</div>
+            </div>
+
+            <div class="output-section">
+                <h2>☁️ WEATHER</h2>
+                <div class="description" id="description">-</div>
+            </div>
+
+            <div class="details">
+                <div class="output-section detail-item">
+                    <span>💧 Humidity</span>
+                    <strong id="humidity">-</strong>
+                </div>
+                <div class="output-section detail-item">
+                    <span>💨 Wind Speed</span>
+                    <strong id="wind">-</strong>
+                </div>
+                <div class="output-section detail-item">
+                    <span>🌅 Sunrise</span>
+                    <strong id="sunrise">-</strong>
+                </div>
+                <div class="output-section detail-item">
+                    <span>🌇 Sunset</span>
+                    <strong id="sunset">-</strong>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <h2>📊 DETAILED INFO</h2>
+                <div class="weather-details">
+                    <p><strong>Feels Like:</strong> <span id="feelsLike">-</span></p>
+                    <p><strong>Pressure:</strong> <span id="pressure">-</span></p>
+                    <p><strong>Visibility:</strong> <span id="visibility">-</span></p>
+                    <p><strong>Country:</strong> <span id="country">-</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div class="error" id="error"></div>
+
+        <!-- Search History -->
+        <div class="search-history" id="searchHistory">
+            <h3>🕐 Recent Searches</h3>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        const MAX_HISTORY = 5;
+        let searchHistory = JSON.parse(localStorage.getItem('weatherHistory')) || [];
+
+        async function getWeather() {
+            const city = document.getElementById("cityInput").value.trim();
+            const weatherInfo = document.getElementById("weatherInfo");
+            const error = document.getElementById("error");
+            const status = document.getElementById("status");
+
+            if (!city) {
+                error.textContent = "❌ Please enter a city name";
+                error.classList.add("show");
+                weatherInfo.classList.remove("show");
+                status.textContent = "";
+                return;
+            }
+
+            status.textContent = "🔄 Searching for weather...";
+            status.classList.add("show");
+
+            try {
+                console.log(`🔍 Fetching weather for: ${city}`);
+                const response = await fetch(`/api/weather/${city}`);
+                console.log(`📡 Response status: ${response.status}`);
+                
+                const data = await response.json();
+                console.log("📊 Data received:", data);
+
+                if (data.success) {
+                    // Display all weather information
+                    document.getElementById("location").textContent = data.location;
+                    document.getElementById("temp").textContent = `${Math.round(data.temperature)}°C`;
+                    document.getElementById("description").textContent = data.description.toUpperCase();
+                    document.getElementById("humidity").textContent = `${data.humidity}%`;
+                    document.getElementById("wind").textContent = `${data.wind_speed} m/s`;
+                    document.getElementById("feelsLike").textContent = `${Math.round(data.feels_like)}°C`;
+                    document.getElementById("pressure").textContent = `${data.pressure} hPa`;
+                    document.getElementById("visibility").textContent = `${(data.visibility / 1000).toFixed(1)} km`;
+                    document.getElementById("sunrise").textContent = data.sunrise;
+                    document.getElementById("sunset").textContent = data.sunset;
+                    
+                    // Extract country from location
+                    const locationParts = data.location.split(',');
+                    const country = locationParts[locationParts.length - 1].trim();
+                    document.getElementById("country").textContent = country;
+
+                    weatherInfo.classList.add("show");
+                    error.classList.remove("show");
+                    status.textContent = `✅ Weather found for ${data.location}`;
+                    status.classList.add("show");
+
+                    // Add to search history
+                    addToHistory(city, data.location);
+                    console.log("✅ Weather data displayed successfully");
+                } else {
+                    error.textContent = `❌ ${data.error || "Location not found"}. Try another city name.`;
+                    console.error("API Error:", data.error);
+                    error.classList.add("show");
+                    weatherInfo.classList.remove("show");
+                    status.textContent = `⚠️ Error: ${data.error}`;
+                }
+            } catch (err) {
+                console.error("❌ Fetch error:", err);
+                error.textContent = `❌ Error: ${err.message}. Check your internet connection.`;
+                error.classList.add("show");
+                weatherInfo.classList.remove("show");
+                status.textContent = "❌ Connection error";
+            }
+        }
+
+        function addToHistory(search, location) {
+            const entry = `${search} (${location})`;
+            searchHistory = searchHistory.filter(item => item !== entry);
+            searchHistory.unshift(entry);
+            searchHistory = searchHistory.slice(0, MAX_HISTORY);
+            localStorage.setItem('weatherHistory', JSON.stringify(searchHistory));
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById("historyList");
+            if (searchHistory.length === 0) {
+                historyList.innerHTML = "<p style='opacity: 0.6;'>No recent searches</p>";
+                return;
+            }
+            historyList.innerHTML = searchHistory.map((item, index) => 
+                `<button class="history-btn" onclick="searchFromHistory('${item.split(' (')[0]}')">${index + 1}. ${item}</button>`
+            ).join('');
+        }
+
+        function searchFromHistory(city) {
+            document.getElementById("cityInput").value = city;
+            getWeather();
+        }
+
+        // Allow pressing Enter to search
+        document.getElementById("cityInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                getWeather();
+            }
+        });
+
+        async function getCurrentLocation() {
+            const locationInfo = document.getElementById("locationInfo");
+            const status = document.getElementById("status");
+            const error = document.getElementById("error");
+            
+            status.textContent = "🔄 Detecting your current location...";
+            status.classList.add("show");
+            
+            try {
+                console.log("🌍 Getting current location from IP...");
+                
+                // Call our API to get current location
+                const response = await fetch("/api/current-location");
+                console.log(`📡 Response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log("✅ Location data:", data);
+                
+                if (data.success) {
+                    console.log("✅ Location detected:", data);
+                    
+                    // Display current location info
+                    const info = `
+                        <strong>📍 Your Current Location (Based on IP)</strong><br>
+                        ${data.country} ${data.country_emoji}<br>
+                        <small>IP: ${data.ip} | City: ${data.city}</small>
+                    `;
+                    locationInfo.innerHTML = info;
+                    locationInfo.classList.add("show");
+                    
+                    // Fetch weather for current location
+                    if (data.city && data.city !== 'Unknown') {
+                        console.log(`🌤️ Fetching weather for current location: ${data.city}`);
+                        document.getElementById("cityInput").value = data.city;
+                        status.textContent = `🔄 Fetching weather for ${data.city}...`;
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        await getWeather();
+                    } else {
+                        status.textContent = `✅ Location detected: ${data.country}`;
+                        error.textContent = "City not determined from IP. Try searching manually.";
+                        error.classList.add("show");
+                    }
+                } else {
+                    status.textContent = "⚠️ Could not detect location";
+                    error.textContent = `❌ ${data.error || "Location detection failed"}`;
+                    console.warn("Location detection failed:", data.error);
+                    error.classList.add("show");
+                }
+            } catch (err) {
+                console.error("❌ Error detecting location:", err);
+                status.textContent = "❌ Location detection error";
+                error.textContent = `❌ Error: ${err.message}. Check internet connection and try again.`;
+                error.classList.add("show");
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener("load", function() {
+            updateHistoryDisplay();
+            // Optionally auto-detect location when page loads
+            console.log("💡 Tip: Click 📍 My Location button to detect your current location based on IP");
+        });
+    </script>
+</body>
+</html>
